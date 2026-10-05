@@ -593,20 +593,28 @@ function submitLead(e){
   btn.disabled = true;
   btn.textContent = "שולח...";
 
-  fetch(GAS_URL, {
-    method: "POST",
-    mode: "no-cors",
-    headers: { "Content-Type": "text/plain;charset=utf-8" },
-    body: JSON.stringify(payload)
-  }).then(()=>{
+  sendToSheet(payload).then(()=>{
     state.lead = payload;
     state.screen = "full";
     render();
   }).catch(()=>{
     btn.disabled = false;
     btn.textContent = "הצגת הדוח המלא";
-    err.innerHTML = '<div class="error-msg">שגיאה בשליחה. נסו שוב.</div>';
+    err.innerHTML = '<div class="error-msg">השליחה נכשלה או נמשכה זמן רב מדי. בדקו את החיבור לאינטרנט ונסו שוב.</div>';
   });
+}
+
+// שולח נתונים ל-Google Sheets עם פסק זמן, כדי שלא יישאר "תקוע" על רשת איטית
+function sendToSheet(payload){
+  const controller = new AbortController();
+  const timeoutId = setTimeout(()=>controller.abort(), 15000);
+  return fetch(GAS_URL, {
+    method: "POST",
+    mode: "no-cors",
+    headers: { "Content-Type": "text/plain;charset=utf-8" },
+    body: JSON.stringify(payload),
+    signal: controller.signal
+  }).finally(()=>clearTimeout(timeoutId));
 }
 
 function requestCall(){
@@ -625,12 +633,7 @@ function requestCall(){
     track: state.lead.track
   };
 
-  fetch(GAS_URL, {
-    method: "POST",
-    mode: "no-cors",
-    headers: { "Content-Type": "text/plain;charset=utf-8" },
-    body: JSON.stringify(payload)
-  }).then(()=>{
+  sendToSheet(payload).then(()=>{
     document.getElementById("ctaBox").innerHTML = `
       <div class="success-box" style="padding:8px 0;">
         <div class="ok" style="width:44px;height:44px;font-size:20px;">✓</div>
@@ -641,7 +644,7 @@ function requestCall(){
   }).catch(()=>{
     btn.disabled = false;
     btn.textContent = "אשמח לתאם שיחה ולקבל מידע נוסף";
-    err.innerHTML = '<div class="error-msg">שגיאה בשליחה. נסו שוב.</div>';
+    err.innerHTML = '<div class="error-msg">השליחה נכשלה או נמשכה זמן רב מדי. בדקו את החיבור לאינטרנט ונסו שוב.</div>';
   });
 }
 
