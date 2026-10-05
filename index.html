@@ -217,6 +217,28 @@
   }
   .gap-item p{font-size:13px;font-weight:600;flex:1;}
   .tag-fix{font-size:11px;color:var(--red);background:#fef2f2;padding:3px 8px;border-radius:999px;font-weight:700;flex-shrink:0;}
+  .tag-partial{font-size:11px;color:var(--amber);background:#fffbeb;padding:3px 8px;border-radius:999px;font-weight:700;flex-shrink:0;}
+  .tag-verify{font-size:11px;color:var(--green-dark);background:#ecfdf3;padding:3px 8px;border-radius:999px;font-weight:700;flex-shrink:0;}
+  .gap-item .num.ok-check{background:#ecfdf3;color:var(--green-dark);}
+
+  .stat-row{display:flex;gap:10px;margin-bottom:22px;}
+  .stat-tile{
+    flex:1;text-align:center;border:1px solid var(--border);border-radius:12px;padding:14px 8px;
+  }
+  .stat-tile b{display:block;font-size:22px;font-weight:800;color:var(--green-dark);}
+  .stat-tile.amber b{color:var(--amber);}
+  .stat-tile.red b{color:var(--red);}
+  .stat-tile span{font-size:11px;color:var(--muted);font-weight:600;}
+
+  .cat-row{margin-bottom:14px;}
+  .cat-row-top{display:flex;justify-content:space-between;font-size:12.5px;font-weight:700;margin-bottom:6px;}
+  .cat-row-top span{color:var(--text);}
+  .cat-row .progress-track{margin-bottom:0;}
+
+  .cta-box{border:1px solid var(--border);border-radius:14px;padding:20px;margin-top:22px;background:#f9fbfd;}
+  .cta-box h4{font-size:14.5px;font-weight:700;margin-bottom:6px;}
+  .cta-box .hint{font-size:12.5px;color:var(--muted);margin-bottom:16px;line-height:1.6;}
+  .cta-link{display:block;text-align:center;text-decoration:none;box-sizing:border-box;}
 
   .lead-box{border:1px solid var(--border);border-radius:14px;padding:20px;margin-top:22px;}
   .lead-box h4{font-size:14.5px;font-weight:700;margin-bottom:6px;}
@@ -304,6 +326,25 @@ const TRACKS = {
       "האם הוגדר כיצד תמומש האחריות הזו בפועל?",
       "האם הוגדר תהליך לקבלת דוחות בקר הבטיחות, בחינתם ומתן מענה?",
       "האם הוגדר תהליך לבדיקה ולאישור המינויים של בעלי התפקידים באתר?"
+    ],
+    shortLabels: [
+      "אישור תוכנית הבטיחות",
+      "הגדרת המשאבים הנדרשים",
+      "מינוי בקר בטיחות במועד",
+      "העברת פרטי בקר הבטיחות למבצע",
+      "הגדרת סיכון בלתי קביל",
+      "נוהל טיפול בסיכון בלתי קביל",
+      "הבהרת אחריות מזמין העבודה",
+      "יישום האחריות בפועל",
+      "קבלת ובחינת דוחות בקר הבטיחות",
+      "בדיקת ואישור מינויים"
+    ],
+    categories: [
+      { name: "תוכנית בטיחות ומשאבים", q: [0,1] },
+      { name: "מינוי בקר בטיחות והעברת פרטים", q: [2,3] },
+      { name: "זיהוי וטיפול בסיכון בלתי קביל", q: [4,5] },
+      { name: "אחריות מזמין העבודה ויישומה", q: [6,7] },
+      { name: "בקרת דוחות ואישור מינויים", q: [8,9] }
     ]
   },
   contractors: {
@@ -321,6 +362,25 @@ const TRACKS = {
       "האם הוגדר כיצד מנהל האתר יאשר את הטיפול בסיכונים?",
       "האם הוגדר כיצד מנהל האתר יוודא שקיימות התוכניות ההנדסיות הנדרשות?",
       "האם מנהל העבודה ערוך לביצוע סיור יומי, בדיקת מיגון המכונות ועדכון הפנקס הכללי?"
+    ],
+    shortLabels: [
+      "הצבת שלט אתר",
+      "אישור תוכנית הבטיחות על ידי המזמין",
+      "פירוט המשאבים ליישום התוכנית",
+      "קבלת פרטי בקר הבטיחות",
+      "טפסי מינוי בעלי התפקידים",
+      "חתימת מבצע הבנייה על התוכנית",
+      "מסירת תוכנית הבטיחות לבקר",
+      "אישור הטיפול בסיכונים",
+      "בדיקת התוכניות ההנדסיות",
+      "סיור יומי ועדכון הפנקס הכללי"
+    ],
+    categories: [
+      { name: "שלט ותוכנית בטיחות", q: [0,1] },
+      { name: "משאבים וממשק עם המזמין", q: [2,3] },
+      { name: "מינויים ואישורים", q: [4,5] },
+      { name: "בקר בטיחות וטיפול בסיכונים", q: [6,7] },
+      { name: "תוכניות הנדסיות ובקרה יומית", q: [8,9] }
     ]
   }
 };
@@ -337,7 +397,7 @@ function render(){
   if(state.screen === "intro") c.innerHTML = introHTML();
   else if(state.screen === "question") c.innerHTML = questionHTML();
   else if(state.screen === "result") c.innerHTML = resultHTML();
-  else if(state.screen === "success") c.innerHTML = successHTML();
+  else if(state.screen === "full") c.innerHTML = fullReportHTML();
 }
 
 function introHTML(){
@@ -399,12 +459,42 @@ function computeScore(){
   return Math.round((total/max)*100);
 }
 
-function getGaps(){
+function getAllGaps(){
   const track = TRACKS[state.trackKey];
-  const items = state.answers.map((a,i)=>({q:track.questions[i], score:a.score}))
+  return state.answers
+    .map((a,i)=>({ label: track.shortLabels[i], score: a.score, tag: a.score===0 ? "לטיפול" : "להשלמה" }))
     .filter(x=>x.score<2)
     .sort((a,b)=>a.score-b.score);
-  return items.slice(0,2);
+}
+
+function getGaps(){
+  return getAllGaps().slice(0,2);
+}
+
+function getStats(){
+  const ok = state.answers.filter(a=>a.score===2).length;
+  const partial = state.answers.filter(a=>a.score===1).length;
+  const material = state.answers.filter(a=>a.score===0).length;
+  return { ok, partial, material };
+}
+
+function getCategoryBreakdown(){
+  const track = TRACKS[state.trackKey];
+  return track.categories.map(cat=>{
+    const scores = cat.q.map(i=>state.answers[i].score);
+    const percent = Math.round((scores.reduce((s,v)=>s+v,0) / (scores.length*2)) * 100);
+    return { name: cat.name, percent };
+  });
+}
+
+function noGapsRow(tagText){
+  return `
+    <div class="gap-item">
+      <div class="num ok-check">✓</div>
+      <p>לא זוהו פערים מהותיים. מומלץ לבצע אימות מקצועי פרטני.</p>
+      <span class="tag-verify">${tagText}</span>
+    </div>
+  `;
 }
 
 function resultHTML(){
@@ -413,8 +503,8 @@ function resultHTML(){
   const gaps = getGaps();
   let level, msg, color;
   if(score>=80){ level="מוכנות גבוהה"; color="var(--green)"; msg="קיימת אצלכם תשתית טובה. מומלץ להשלים אימות פרטני ולוודא שהיישום עקבי בכל הפרויקטים."; }
-  else if(score>=50){ level="מוכנות חלקית"; color="var(--amber)"; msg="קיימת אצלכם התחלה סבירה, אך נדרשת השלמה של מספר נושאים מרכזיים כדי לעמוד בדרישות התקנות החדשות."; }
-  else { level="חשיפה משמעותית"; color="var(--red)"; msg="זוהו פערים משמעותיים מול דרישות התקנות החדשות. מומלץ לפעול בהקדם לסגירת הפערים ולהיערכות מסודרת."; }
+  else if(score>=50){ level="מוכנות חלקית"; color="var(--amber)"; msg="קיימת תשתית ראשונית, אך זוהו פערים שכדאי להסדיר לפני כניסת התקנות לתוקף."; }
+  else { level="חשיפה משמעותית"; color="var(--red)"; msg="נדרשת תוכנית היערכות ממוקדת להסדרת אחריות, תהליכי בקרה ותיעוד."; }
 
   const circumference = 2*Math.PI*48;
   const offset = circumference - (score/100)*circumference;
@@ -443,16 +533,14 @@ function resultHTML(){
       <span><i class="a"></i>מוכנות חלקית</span>
       <span><i class="r"></i>חשיפה משמעותית</span>
     </div>
-    ${gaps.length ? `
-      <div class="gaps-title"><span class="bar"></span>${gaps.length>1?"שני הפערים המרכזיים":"הפער המרכזי"}</div>
-      ${gaps.map((g,i)=>`
-        <div class="gap-item">
-          <div class="num">${i+1}</div>
-          <p>${g.q}</p>
-          <span class="tag-fix">לטיפול</span>
-        </div>
-      `).join("")}
-    ` : ""}
+    <div class="gaps-title"><span class="bar"></span>${gaps.length>1?"שני הפערים המרכזיים":gaps.length===1?"הפער המרכזי":"סיכום ראשוני"}</div>
+    ${gaps.length ? gaps.map((g,i)=>`
+      <div class="gap-item">
+        <div class="num">${i+1}</div>
+        <p>${g.label}</p>
+        <span class="${g.tag==='לטיפול'?'tag-fix':'tag-partial'}">${g.tag}</span>
+      </div>
+    `).join("") : noGapsRow("לאימות")}
     <div class="lead-box">
       <h4>לקבלת הפירוט המלא של הממצאים לפי נושאים</h4>
       <p class="hint">מלאו את הפרטים והדוח המלא יוצג מיד.</p>
@@ -491,7 +579,7 @@ function submitLead(e){
     role: document.getElementById("f_role").value,
     company: document.getElementById("f_company").value,
     phone: document.getElementById("f_phone").value,
-    gaps: getGaps().map(g=>g.q).join(" | "),
+    gaps: getAllGaps().map(g=>`${g.label} (${g.tag})`).join(" | "),
     answers: state.answers.map((a,i)=>`${TRACKS[state.trackKey].questions[i]} => ${a.label}`).join(" || ")
   };
 
@@ -510,7 +598,7 @@ function submitLead(e){
     body: JSON.stringify(payload)
   }).then(()=>{
     state.lead = payload;
-    state.screen = "success";
+    state.screen = "full";
     render();
   }).catch(()=>{
     btn.disabled = false;
@@ -519,14 +607,52 @@ function submitLead(e){
   });
 }
 
-function successHTML(){
+function fullReportHTML(){
+  const track = TRACKS[state.trackKey];
+  const score = computeScore();
+  const stats = getStats();
+  const cats = getCategoryBreakdown();
+  const gaps = getAllGaps();
+
+  function catColor(p){ return p>=80 ? "var(--green)" : p>=50 ? "var(--amber)" : "var(--red)"; }
+
   return `
-    <div class="success-box">
-      <div class="ok">✓</div>
-      <h3>הפרטים נשלחו בהצלחה</h3>
-      <p>תודה, ${state.lead.firstName}! הדוח המלא יישלח אליכם בהקדם, והפרטים נקלטו במערכת שלנו.</p>
-      <button class="restart" onclick="restart()" style="margin-top:20px;">התחלת בדיקה חדשה</button>
+    <div class="result-top">
+      <span class="pill">דוח מוכנות מלא</span>
     </div>
+    <div class="track-name">${track.name}</div>
+    <p class="hint" style="margin-bottom:18px;">מלאו את הפרטים והדוח המלא יוצג מיד.</p>
+
+    <div class="stat-row">
+      <div class="stat-tile"><b>${stats.ok}</b><span>נושאים מוסדרים</span></div>
+      <div class="stat-tile amber"><b>${stats.partial}</b><span>פערים חלקיים</span></div>
+      <div class="stat-tile red"><b>${stats.material}</b><span>פערים מהותיים</span></div>
+    </div>
+
+    <div class="gaps-title"><span class="bar"></span>תמונת מצב לפי תחומים</div>
+    ${cats.map(c=>`
+      <div class="cat-row">
+        <div class="cat-row-top"><span>${c.name}</span><b style="color:${catColor(c.percent)}">${c.percent}%</b></div>
+        <div class="progress-track"><div class="progress-fill" style="width:${c.percent}%;background:${catColor(c.percent)}"></div></div>
+      </div>
+    `).join("")}
+
+    <div class="gaps-title"><span class="bar"></span>כל הפערים שזוהו</div>
+    ${gaps.length ? gaps.map((g,i)=>`
+      <div class="gap-item">
+        <div class="num">${i+1}</div>
+        <p>${g.label}</p>
+        <span class="${g.tag==='לטיפול'?'tag-fix':'tag-partial'}">${g.tag}</span>
+      </div>
+    `).join("") : noGapsRow("לאימות")}
+
+    <div class="cta-box">
+      <h4>רוצים לקבל פרטים ומידע נוסף?</h4>
+      <p class="hint">נשמח לתאם שיחה קצרה, לעבור על ממצאי השאלון ולספק מידע נוסף שיסייע לכם להיערך לקראת כניסת תקנות הבטיחות החדשות לתוקף.</p>
+      <a class="submit-btn cta-link" href="mailto:niv@projectpro.co.il?subject=${encodeURIComponent('בקשת מידע - שאלון בטיחות ('+state.lead.firstName+' '+state.lead.lastName+')')}&body=${encodeURIComponent('שלום,\n\nמילאתי את שאלון הבטיחות (מסלול: '+track.name+', ציון: '+score+').\nטלפון: '+state.lead.phone+'\n\nאשמח לקבל פרטים נוספים.')}">אשמח לתאם שיחה ולקבל מידע נוסף</a>
+    </div>
+
+    <button class="restart" onclick="restart()">התחלת בדיקה חדשה</button>
   `;
 }
 
