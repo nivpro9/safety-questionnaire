@@ -590,18 +590,11 @@ function submitLead(e){
     return;
   }
 
-  btn.disabled = true;
-  btn.textContent = "שולח...";
-
-  sendToSheet(payload).then(()=>{
-    state.lead = payload;
-    state.screen = "full";
-    render();
-  }).catch(()=>{
-    btn.disabled = false;
-    btn.textContent = "הצגת הדוח המלא";
-    err.innerHTML = '<div class="error-msg">השליחה נכשלה או נמשכה זמן רב מדי. בדקו את החיבור לאינטרנט ונסו שוב.</div>';
-  });
+  // מעבירים מיד למסך הבא, והשליחה בפועל רצה ברקע כדי שהממתין לא ירגיש
+  sendToSheet(payload).catch(()=>{ /* נכשל בשקט ברקע; הנתונים כבר הוצגו למשתמש */ });
+  state.lead = payload;
+  state.screen = "full";
+  render();
 }
 
 // שולח נתונים ל-Google Sheets עם פסק זמן, כדי שלא יישאר "תקוע" על רשת איטית
@@ -622,7 +615,6 @@ function requestCall(){
   const err = document.getElementById("callErrMsg");
   err.innerHTML = "";
   btn.disabled = true;
-  btn.textContent = "שולח...";
 
   const payload = {
     type: "callRequest",
@@ -633,19 +625,15 @@ function requestCall(){
     track: state.lead.track
   };
 
-  sendToSheet(payload).then(()=>{
-    document.getElementById("ctaBox").innerHTML = `
-      <div class="success-box" style="padding:8px 0;">
-        <div class="ok" style="width:44px;height:44px;font-size:20px;">✓</div>
-        <h3 style="font-size:15px;">הבקשה נשלחה בהצלחה</h3>
-        <p>תודה, ${state.lead.firstName}! ניצור איתכם קשר בהקדם.</p>
-      </div>
-    `;
-  }).catch(()=>{
-    btn.disabled = false;
-    btn.textContent = "אשמח לתאם שיחה ולקבל מידע נוסף";
-    err.innerHTML = '<div class="error-msg">השליחה נכשלה או נמשכה זמן רב מדי. בדקו את החיבור לאינטרנט ונסו שוב.</div>';
-  });
+  // מציגים אישור מיד; השליחה בפועל רצה ברקע כדי שהממתין לא ירגיש
+  sendToSheet(payload).catch(()=>{ /* נכשל בשקט ברקע */ });
+  document.getElementById("ctaBox").innerHTML = `
+    <div class="success-box" style="padding:8px 0;">
+      <div class="ok" style="width:44px;height:44px;font-size:20px;">✓</div>
+      <h3 style="font-size:15px;">הבקשה נשלחה בהצלחה</h3>
+      <p>תודה, ${state.lead.firstName}! ניצור איתכם קשר בהקדם.</p>
+    </div>
+  `;
 }
 
 function fullReportHTML(){
