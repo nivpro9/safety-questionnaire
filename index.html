@@ -550,8 +550,8 @@ function resultHTML(){
           <div class="field"><label>שם משפחה</label><input required id="f_last" /></div>
         </div>
         <div class="field-row">
-          <div class="field"><label>תפקיד</label><input id="f_role" /></div>
-          <div class="field"><label>חברה</label><input id="f_company" /></div>
+          <div class="field"><label>תפקיד</label><input required id="f_role" /></div>
+          <div class="field"><label>חברה</label><input required id="f_company" /></div>
         </div>
         <div class="field-row">
           <div class="field"><label>מספר נייד</label><input required id="f_phone" type="tel" /></div>
@@ -571,6 +571,7 @@ function submitLead(e){
   const err = document.getElementById("errMsg");
   err.innerHTML = "";
   const payload = {
+    type: "lead",
     timestamp: new Date().toLocaleString("he-IL"),
     track: TRACKS[state.trackKey].name,
     score: computeScore(),
@@ -580,7 +581,8 @@ function submitLead(e){
     company: document.getElementById("f_company").value,
     phone: document.getElementById("f_phone").value,
     gaps: getAllGaps().map(g=>`${g.label} (${g.tag})`).join(" | "),
-    answers: state.answers.map((a,i)=>`${TRACKS[state.trackKey].questions[i]} => ${a.label}`).join(" || ")
+    answers: state.answers.map((a,i)=>`${TRACKS[state.trackKey].questions[i]} => ${a.label}`).join(" || "),
+    wantsCall: "לא"
   };
 
   if(GAS_URL.indexOf("PASTE_YOUR") === 0){
@@ -603,6 +605,42 @@ function submitLead(e){
   }).catch(()=>{
     btn.disabled = false;
     btn.textContent = "הצגת הדוח המלא";
+    err.innerHTML = '<div class="error-msg">שגיאה בשליחה. נסו שוב.</div>';
+  });
+}
+
+function requestCall(){
+  const btn = document.getElementById("callBtn");
+  const err = document.getElementById("callErrMsg");
+  err.innerHTML = "";
+  btn.disabled = true;
+  btn.textContent = "שולח...";
+
+  const payload = {
+    type: "callRequest",
+    timestamp: new Date().toLocaleString("he-IL"),
+    firstName: state.lead.firstName,
+    lastName: state.lead.lastName,
+    phone: state.lead.phone,
+    track: state.lead.track
+  };
+
+  fetch(GAS_URL, {
+    method: "POST",
+    mode: "no-cors",
+    headers: { "Content-Type": "text/plain;charset=utf-8" },
+    body: JSON.stringify(payload)
+  }).then(()=>{
+    document.getElementById("ctaBox").innerHTML = `
+      <div class="success-box" style="padding:8px 0;">
+        <div class="ok" style="width:44px;height:44px;font-size:20px;">✓</div>
+        <h3 style="font-size:15px;">הבקשה נשלחה בהצלחה</h3>
+        <p>תודה, ${state.lead.firstName}! ניצור איתכם קשר בהקדם.</p>
+      </div>
+    `;
+  }).catch(()=>{
+    btn.disabled = false;
+    btn.textContent = "אשמח לתאם שיחה ולקבל מידע נוסף";
     err.innerHTML = '<div class="error-msg">שגיאה בשליחה. נסו שוב.</div>';
   });
 }
@@ -646,10 +684,11 @@ function fullReportHTML(){
       </div>
     `).join("") : noGapsRow("לאימות")}
 
-    <div class="cta-box">
+    <div class="cta-box" id="ctaBox">
       <h4>רוצים לקבל פרטים ומידע נוסף?</h4>
       <p class="hint">נשמח לתאם שיחה קצרה, לעבור על ממצאי השאלון ולספק מידע נוסף שיסייע לכם להיערך לקראת כניסת תקנות הבטיחות החדשות לתוקף.</p>
-      <a class="submit-btn cta-link" href="mailto:niv@projectpro.co.il?subject=${encodeURIComponent('בקשת מידע - שאלון בטיחות ('+state.lead.firstName+' '+state.lead.lastName+')')}&body=${encodeURIComponent('שלום,\n\nמילאתי את שאלון הבטיחות (מסלול: '+track.name+', ציון: '+score+').\nטלפון: '+state.lead.phone+'\n\nאשמח לקבל פרטים נוספים.')}">אשמח לתאם שיחה ולקבל מידע נוסף</a>
+      <button class="submit-btn" id="callBtn" onclick="requestCall()">אשמח לתאם שיחה ולקבל מידע נוסף</button>
+      <div id="callErrMsg"></div>
     </div>
 
     <button class="restart" onclick="restart()">התחלת בדיקה חדשה</button>
